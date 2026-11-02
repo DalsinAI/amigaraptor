@@ -102,6 +102,47 @@ default, so the d-pad, A and B drive the menus. A CD32 pad has no Back
 button, which the game uses for the in-flight menu: hold both shoulders
 and press Play. `Control=2` is upstream's joystick-only mode.
 
+### Audio
+
+Music (the game's OPL2 tunes, through upstream's OPL3 emulation) and the
+digital effects are mixed by the game into one 44.1 kHz 16-bit stereo
+stream that SDL plays through AHI (OpenAHI's driver on AmiCradle), as
+upstream's `SETUP.INI` defaults choose (Sound Blaster for both). Upstream's
+MIDI routes (TinySoundFont with a SoundFont, or the system's MIDI) are not
+used on the Amiga. The log says what SDL opened (`Audio: ahi, 44100 Hz,
+2 channel(s), 512 samples a buffer`). With `RAPTOR_FPS` set each
+five-second line also gives the buffers mixed and the time spent mixing
+them (`patches/0004`): 431 or 432 buffers in five seconds (44100 / 512 a
+second) means none was late. `SetEnv SDL_AUDIODRIVER dummy` runs the game
+without AHI; `CardType=0` under `[Music]` and `[SoundFX]` in `SETUP.INI`
+turns music and effects off.
+
+## Observed 2 November 2026: sound (step 4)
+
+Commit `b55c304` (patches 0001 to 0004), Cradle `stove_build`, open4:
+executable SHA-256
+`2611a0e3bfbe4fb48530746197e127a7f527111f1e8c3ad3d3b882c6a190c31e`
+(`receipts/4-audio-open4-stove_build.json`). Same lab (muted) and
+`SDL2.module`; three games started, flown and quit in 14 minutes, no stop.
+
+- SDL opened AHI: `Audio: ahi, 44100 Hz, 2 channel(s), 512 samples a
+  buffer`. The lab is muted, so nothing was heard; what is measured is
+  that the stream was opened and fed in time.
+- Steady flight (23.3 frames a second): 430 to 432 buffers every five
+  seconds, none late, with 30 to 37 % of the time in the mixer (the OPL3
+  emulation is most of it).
+- Busy moments (a damaged ship with many explosions, 12 to 20 frames a
+  second): the mixer took up to 66 % of the time and fell behind, 323 to
+  410 buffers in five seconds, so the sound would stutter there.
+- Intro, menus and hangar: 26 to 55 % in the mixer; the buffers were all
+  mixed (the counts over longer periods match 86 a second).
+- Quit with sound on: the program ended and left no task, and the lab went
+  on (three times).
+- `SDL_AUDIODRIVER=dummy` (the step 3 build): a game played to the end and
+  quit cleanly, the same as with AHI.
+
+![Wave 1 in developer mode, sound on](docs/observed/step4-wave1-godmode.png)
+
 ## Observed 2 November 2026: input and the first wave (step 3)
 
 Commit `2fe304a` (patches 0001 to 0003), Cradle `stove_build`, open4:
