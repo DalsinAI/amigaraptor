@@ -1,6 +1,6 @@
 # Amiga port intake: Raptor: Call of the Shadows
 
-- Port Atlas: [g-raptor-call-of-the-shadows](https://www.amigachrome.com/ports/#g-raptor-call-of-the-shadows)
+- Port Atlas: [g-raptor-call-of-the-shadows](https://www.amicradle.com/ports/#g-raptor-call-of-the-shadows)
 - Priority: `P2`
 - Atlas decision: `port`
 - Upstream source: `https://github.com/skynettx/raptor`
