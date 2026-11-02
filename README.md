@@ -70,6 +70,29 @@ Amiga default, so the game starts straight away as `RAP.EXE` did;
 `setup_menu=1` in `PROGDIR:User/SETUP.INI` brings back upstream's text-mode
 start screen and setup.
 
+### Package and icons
+
+Target `package` (`package/build-amiga.sh`) builds the game as `.` does and
+packs the release archive with `tools/make_package.py`:
+`raptor-VERSION-68040.lha` (LhA level-1, `-lh5-`, written by
+`tools/lha_archive.py`) holding the `Raptor` drawer (the program, `ReadMe`
+from `package/ReadMe.in`, `LICENSE`) and `Raptor.info` beside it, with the
+`.sha256`, an Aminet `.readme`, `package.json`, the drawer as it unpacks and
+`Raptor.tar` (for a lab: `untar` unpacks it on the Amiga). The game data is
+not packed (`gameports/catalog.json`'s `contentPolicy`); the ReadMe says
+which files to put beside the program.
+
+The drawer, the game and the documents have OS 3.5 GlowIcons (`icons/*.info`):
+the classic four-colour picture for older Workbenches and two colour frames,
+drawn from the engine's own program icon (`icons/art/raptor.png`, from
+`pkg/osx/raptorlauncher/Assets.xcassets/AppIcon.appiconset/raptor.png`). They
+are committed, so the package needs nothing else; to draw them again, with a
+DalsinAI/amicradle checkout:
+
+```sh
+python3 ../amicradle/scripts/port_icons.py icons/icons.json --out icons
+```
+
 ### Display
 
 The game draws 320x200. With `fullscreen=1` (the default) it opens a screen

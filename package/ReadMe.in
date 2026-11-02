@@ -1,0 +1,57 @@
+Raptor @VERSION@ for AmigaOS 3.x (AmiCradle)
+=================================================
+
+Raptor: Call of the Shadows is the vertical shoot-'em-up from Mountain King
+Studios and Apogee. This is skynettx's open engine for it, built for
+AmigaOS 3.x on a 68040 or 68060 with an FPU, with SDL 2 through GFOpenGPU.
+Status: TESTING, not a release.
+
+Requirements
+------------
+
+- AmigaOS 3.2, a 68040 or 68060 with an FPU, AmiCradle or an RTG board.
+- GFOpenGPU's SDL2.module in LIBS:GFOpenGPU/ from gfopenrtg's main of
+  2 November 2026 or later.
+- AHI for sound. GFOpenInput for pads (lowlevel.library alone gives the
+  joystick port).
+- The game's data (not in this archive): FILE0000.GLB and FILE0001.GLB
+  from the shareware episode (1rap12.zip, RAPSW12.SHR inside it, from
+  the publisher), or the full game's FILE0000.GLB to FILE0003.GLB.
+
+Installing
+----------
+
+Unpack the archive where you keep games (lha x raptor-...lha Games:), then
+put the .GLB files in the Raptor drawer, beside the program. Settings
+(SETUP.INI) and saved pilots go to the drawer's User drawer.
+
+Playing
+-------
+
+- Double-click the game's icon, or from a Shell: cd to the drawer, then
+  raptor (with a stack of 256 KB or more: Stack 262144).
+- The game starts on a screen of its own; Alt+Return switches to a window
+  and back.
+- Keys: the arrow keys move, Ctrl fires, Alt fires the special weapon,
+  Space changes the special weapon, Right Shift drops a mega bomb, P
+  pauses, Escape opens the in-flight menu. The hangar and the menus work
+  with the mouse.
+
+Licence
+-------
+
+The engine is GPL-2.0 (LICENSE); its source is at
+https://github.com/skynettx/raptor. The game data is the publisher's and
+is not part of this archive: the shareware episode may be copied freely,
+unmodified and without charge (VENDOR.DOC in the shareware archive). The
+icons are drawn from the engine's own program icon.
+
+Build
+-----
+
+Engine commit @UPSTREAM_COMMIT@,
+port commit @REPOSITORY_COMMIT@,
+built with OpenAmigaGCC @COMPILER_RELEASE@. The program's SHA-256:
+@EXECUTABLE_SHA256@
+
+Port: the AmiCradle Team, https://github.com/DalsinAI/amigaraptor
