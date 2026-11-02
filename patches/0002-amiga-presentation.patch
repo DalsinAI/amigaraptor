@@ -1,5 +1,19 @@
+diff --git a/src/gfxapi.cpp b/src/gfxapi.cpp
+index 0424743..a472021 100644
+--- a/src/gfxapi.cpp
++++ b/src/gfxapi.cpp
+@@ -1337,6 +1337,9 @@ GFX_DisplayUpdate(
+     
+     while (hold == framecount)
+     {
++#ifdef __amigaos__
++        SDL_Delay(1);
++#endif // __amigaos__
+         GFX_UpdateTimer();
+     }
+     
 diff --git a/src/i_video.cpp b/src/i_video.cpp
-index 6248e6b..32f6024 100644
+index 6248e6b..6bf6f57 100644
 --- a/src/i_video.cpp
 +++ b/src/i_video.cpp
 @@ -204,7 +204,11 @@ static bool highdpi = false;
@@ -14,7 +28,7 @@ index 6248e6b..32f6024 100644
      txt_fullscreen = INI_GetPreferenceLong("Video", "txt_fullscreen", 0);
  }
  
-@@ -388,6 +392,19 @@ static void I_ToggleFullScreen(void)
+@@ -388,6 +392,20 @@ static void I_ToggleFullScreen(void)
  {
      unsigned int flags = 0;
  
@@ -28,13 +42,14 @@ index 6248e6b..32f6024 100644
 +        SDL_SetWindowSize(screen, SCREENWIDTH, actualheight);
 +
 +    palette_to_set = true;
++    I_FinishUpdate();
 +    return;
 +#endif // __amigaos__
 +
      // TODO: Consider implementing fullscreen toggle for SDL_WINDOW_FULLSCREEN
      // (mode-changing) setup. This is hard because we have to shut down and
      // restart again.
-@@ -640,6 +657,13 @@ static void CreateUpscaledTexture(bool force)
+@@ -640,6 +658,13 @@ static void CreateUpscaledTexture(bool force)
  
      SDL_Texture *new_texture, *old_texture;
  
@@ -48,7 +63,7 @@ index 6248e6b..32f6024 100644
      // Get the size of the renderer output. The units this gives us will be
      // real world pixels, which are not necessarily equivalent to the screen's
      // window size (because of highdpi).
-@@ -716,6 +740,46 @@ static void CreateUpscaledTexture(bool force)
+@@ -716,6 +741,46 @@ static void CreateUpscaledTexture(bool force)
      }
  }
  
@@ -95,7 +110,7 @@ index 6248e6b..32f6024 100644
  //
  // I_FinishUpdate
  //
-@@ -813,6 +877,9 @@ void I_FinishUpdate (void)
+@@ -813,6 +878,9 @@ void I_FinishUpdate (void)
  
      SDL_RenderClear(renderer);
  
@@ -105,7 +120,7 @@ index 6248e6b..32f6024 100644
      // Render this intermediate texture into the upscaled texture
      // using "nearest" integer scaling.
  
-@@ -823,11 +890,16 @@ void I_FinishUpdate (void)
+@@ -823,11 +891,16 @@ void I_FinishUpdate (void)
  
      SDL_SetRenderTarget(renderer, NULL);
      SDL_RenderCopy(renderer, texture_upscaled, NULL, NULL);
@@ -122,7 +137,7 @@ index 6248e6b..32f6024 100644
  #if 0
      // Restore background and undo the disk indicator, if it was drawn.
      V_RestoreDiskBackground();
-@@ -1205,6 +1277,17 @@ static void SetVideoMode(void)
+@@ -1205,6 +1278,17 @@ static void SetVideoMode(void)
      w = window_width;
      h = window_height;
  
@@ -140,7 +155,7 @@ index 6248e6b..32f6024 100644
      // In windowed mode, the window can be resized while the game is
      // running.
      window_flags = SDL_WINDOW_RESIZABLE;
-@@ -1229,6 +1312,7 @@ static void SetVideoMode(void)
+@@ -1229,6 +1313,7 @@ static void SetVideoMode(void)
              window_flags |= SDL_WINDOW_FULLSCREEN;
          }
      }
