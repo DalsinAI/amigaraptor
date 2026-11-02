@@ -1,0 +1,17 @@
+{
+  "dataset": "raptor-shareware-1.2",
+  "archive": "1rap12.zip",
+  "archive_sha256": "7d6b062dcdc76d9ea02d8d71af14e5043223581d792f6ead4eb1316fd0351552",
+  "staged": {
+    "FILE0000.GLB": {
+      "bytes": 575577,
+      "sha256": "6933afc73f9d12c8d215693057bd564920a2e29d25b617bba969767c60a60d9e"
+    },
+    "FILE0001.GLB": {
+      "bytes": 4027556,
+      "sha256": "0afc45983e79f499609a1ea55ee59ebd606daa9a529fcd9ac487e4a5e1e0f589"
+    }
+  },
+  "vendor_doc_sha256": "3e4811d1ce11e2dc2ea219b364573d8cc49590e63ecedde2f1626c54b82e4d62",
+  "scope": "Local lab staging only; not committed, packaged or redistributed"
+}

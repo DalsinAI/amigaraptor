@@ -1,0 +1,18 @@
+{
+  "upstream_commit": "746c35a256bfa2afc6732c7923be9e2e777d6bf0",
+  "repository_commit": "f8ddda3aaf3d51f356a521f24371f9ca47598f11",
+  "source_date_epoch": "1793647344",
+  "patches": {},
+  "compiler_release": "16.2.0-open4",
+  "compiler_archive_sha256": "495319a2ffd803278f8827cad70074029c7aa9ecbe05d037e8646ba43ab94ab2",
+  "sdk_inputs": {
+    "lib/libSDL2.a": "0adabe8d7df786a96c45dd6bf0210580d28ad2a00b7c83304b35e7e67f0a16d9",
+    "lib/libGL.a": "f5a4fd7591edfac13a82f48e5bf925a8b957e58a02afcd467ff74aa8cbdb9417",
+    "include/SDL2/SDL.h": "952e89e1dc4e0dd1a7bea6a153df632b8cdb6e433a9b3b0702c5ffe15b9b9360"
+  },
+  "setup": true,
+  "network": false,
+  "executable_sha256": "723be964eacc4c39eb2f883f8e2ddea53e2ec412a99b6275f2a7072e5cec05d2",
+  "executable_bytes": 855476,
+  "scope": "Source build only; no game data, runtime or release pass implied"
+}
