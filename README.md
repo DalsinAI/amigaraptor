@@ -54,7 +54,65 @@ why it is taken to be the publisher's release), and puts them in
 `Raptor/` with `VENDOR.DOC`. Nothing is redistributed: the data stays
 external, as the manifest's policy says.
 
-## Observed 2 November 2026
+## Running
+
+Put `raptor` and `LICENSE` in a drawer with `FILE0000.GLB` and
+`FILE0001.GLB` beside them (`runtime-data/build-amiga.sh` stages exactly
+that) and start `raptor` from a Shell with a stack of 256 KB or more
+(`Stack 262144`; SDL2 needs it). The game reads its data from `PROGDIR:`,
+wherever it is started from. It needs a 68040 or 68060 with its FPU,
+GFOpenGPU's `SDL2.module` and, for sound, AHI.
+
+Everything the game writes goes in `PROGDIR:User` (`patches/0001`), made on
+the first run: `SETUP.INI` (the settings upstream's README describes, written
+with the defaults on the first run) and the saves. `setup_menu=0` is the
+Amiga default, so the game starts straight away as `RAP.EXE` did;
+`setup_menu=1` in `PROGDIR:User/SETUP.INI` brings back upstream's text-mode
+start screen and setup.
+
+### Display
+
+The game draws 320x200. With `fullscreen=1` (the default) it opens a screen
+of its own in the display mode closest to 320x200 (`patches/0002`), and
+Alt+Return goes between that screen and a Workbench window of exactly
+320x200. The frame goes to the screen without upstream's intermediate
+upscaled texture. `aspect_ratio_correct=1` stretches it to 320x240 instead.
+`SetEnv RAPTOR_FPS 1` logs the frames shown every five seconds (a file name
+instead of `1` adds the lines to that file). Quitting shows upstream's
+text-mode ending screen in a window until a key is pressed.
+
+## Observed 2 November 2026: presentation (step 2)
+
+Lab `lab:raptor`, a copy of Instance-32 (Kickstart 47, 68040 + 68882 under
+Cradle's AC090 runtime, AGA plus the RTG board, opengpu.library 0.22, muted),
+with gfopenrtg `main`'s `SDL2.module` (210df77, SHA-256 `afba9671...`) in
+both `LIBS:OpenGPU/` and `LIBS:GFOpenGPU/`. Commit `23f37e8` (patches 0001
+and 0002), Cradle `stove_build`, open4: executable SHA-256
+`d6e5050c878c22e4b048b7122eb95dbb5b5b15b7ca9cbd4ae41c136e5197ec13`
+(`receipts/2-presentation-open4-stove_build.json`). Started from `RAM:`
+as `SYS:Raptor/raptor`, with no `PROGDIR:User` beforehand.
+
+- The data was found in `PROGDIR:` and `PROGDIR:User/SETUP.INI` written
+  with the Amiga defaults; no setup screen. SDL put the window surface in
+  video RAM (`OS3_FB: window surface in video RAM (320x200)`).
+- The intro and the title menu fill a 320x200 screen of their own, whole
+  and clean (pictures below, as the screen showed them).
+- Alt+Return: a 320x200 Workbench window with the frame drawn at once, and
+  back to the screen of its own.
+- Quit > Yes: the order screen, then upstream's text-mode ending screen in
+  a window; a key ends the program, which left no task and no screen.
+
+![Intro](docs/observed/step2-intro-320x200.png)
+![Title menu, 320x200 screen](docs/observed/step2-menu-320x200.png)
+![The window on the Workbench after Alt+Return](docs/observed/step2-window-workbench.png)
+![Quit asked](docs/observed/step2-exit-ask.png)
+![The ending screen](docs/observed/step2-ending-text-screen.png)
+
+The first build of this step (`3394852`) left the menu grey in the window
+after Alt+Return until a key was pressed, and spun the processor waiting
+for the game's next 70 Hz tick; `23f37e8` fixes both.
+
+## Observed 2 November 2026: build (step 1)
 
 Clean build by Cradle's `stove_build` (target `.`, `os32-gcc16` stove,
 OpenAmigaGCC 16.2.0-open4) of commit `f8ddda3`, no patches yet: upstream's
