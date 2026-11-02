@@ -123,7 +123,8 @@ Commit `b55c304` (patches 0001 to 0004), Cradle `stove_build`, open4:
 executable SHA-256
 `2611a0e3bfbe4fb48530746197e127a7f527111f1e8c3ad3d3b882c6a190c31e`
 (`receipts/4-audio-open4-stove_build.json`). Same lab (muted) and
-`SDL2.module`; three games started, flown and quit in 14 minutes, no stop.
+`SDL2.module`; two runs of the program in 14 minutes, three games flown,
+no stop.
 
 - SDL opened AHI: `Audio: ahi, 44100 Hz, 2 channel(s), 512 samples a
   buffer`. The lab is muted, so nothing was heard; what is measured is
@@ -137,7 +138,7 @@ executable SHA-256
 - Intro, menus and hangar: 26 to 55 % in the mixer; the buffers were all
   mixed (the counts over longer periods match 86 a second).
 - Quit with sound on: the program ended and left no task, and the lab went
-  on (three times).
+  on (both runs).
 - `SDL_AUDIODRIVER=dummy` (the step 3 build): a game played to the end and
   quit cleanly, the same as with AHI.
 
