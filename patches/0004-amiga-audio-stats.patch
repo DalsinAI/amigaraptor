@@ -1,0 +1,135 @@
+diff --git a/src/fx.cpp b/src/fx.cpp
+index caf2421..9ae4618 100644
+--- a/src/fx.cpp
++++ b/src/fx.cpp
+@@ -57,6 +57,13 @@ char cards[M_LAST][23] = {
+     "Sound Blaster AWE 32",
+ };
+ 
++#ifdef __amigaos__
++// AmigaOS: the buffers mixed and the time spent mixing them, for the
++// RAPTOR_FPS lines (FX_TakeStats)
++static volatile Uint32 fx_buffers;
++static volatile Uint64 fx_mixticks;
++#endif // __amigaos__
++
+ /***************************************************************************
+ FX_Fill() -
+  ***************************************************************************/
+@@ -67,13 +74,47 @@ FX_Fill(
+     int len
+ )
+ {
++#ifdef __amigaos__
++    Uint64 t0 = SDL_GetPerformanceCounter();
++#endif // __amigaos__
+     memset(stream, 0, len);
+     int16_t *stream16 = (int16_t*)stream;
+     len /= 4;
+     MUS_Mix(stream16, len);
+     GSS_Mix(stream16, len);
+     DSP_Mix(stream16, len);
++#ifdef __amigaos__
++    fx_mixticks += SDL_GetPerformanceCounter() - t0;
++    fx_buffers++;
++#endif // __amigaos__
++}
++
++#ifdef __amigaos__
++/***************************************************************************
++FX_TakeStats() - AmigaOS: buffers mixed and milliseconds spent mixing
++                 since the last call; 0 when no sound is open
++ ***************************************************************************/
++int
++FX_TakeStats(
++    unsigned *buffers,
++    unsigned *mix_ms
++)
++{
++    Uint64 ticks;
++
++    if (!fx_dev)
++        return 0;
++
++    SDL_LockAudioDevice(fx_dev);
++    *buffers = fx_buffers;
++    ticks = fx_mixticks;
++    fx_buffers = 0;
++    fx_mixticks = 0;
++    SDL_UnlockAudioDevice(fx_dev);
++    *mix_ms = (unsigned)(ticks * 1000 / SDL_GetPerformanceFrequency());
++    return 1;
+ }
++#endif // __amigaos__
+ 
+ /***************************************************************************
+ SND_InitSound () - Does bout all i can think of for Music/FX initing
+@@ -107,6 +148,11 @@ SND_InitSound(
+     }
+ 
+     fx_freq = actual.freq;
++
++#ifdef __amigaos__
++    printf("Audio: %s, %d Hz, %d channel(s), %d samples a buffer\n",
++           SDL_GetCurrentAudioDriver(), actual.freq, actual.channels, actual.samples);
++#endif // __amigaos__
+     
+     if (actual.format != AUDIO_S16SYS || actual.channels != 2)
+     {
+diff --git a/src/fx.h b/src/fx.h
+index 9d848f1..b890637 100644
+--- a/src/fx.h
++++ b/src/fx.h
+@@ -71,6 +71,9 @@ extern int fx_gus;
+ extern int sys_midi, winmm_mpu_device, core_dls_synth, core_midi_port, alsaclient, alsaport;
+ 
+ int SND_InitSound(void);
++#ifdef __amigaos__
++int FX_TakeStats(unsigned *buffers, unsigned *mix_ms);
++#endif // __amigaos__
+ void SND_DeInit(void);
+ void SND_Setup(void);
+ void SND_PlaySong(int item, int chainflag, int fadeflag);
+diff --git a/src/i_video.cpp b/src/i_video.cpp
+index 6bf6f57..5bf3f4d 100644
+--- a/src/i_video.cpp
++++ b/src/i_video.cpp
+@@ -742,6 +742,8 @@ static void CreateUpscaledTexture(bool force)
+ }
+ 
+ #ifdef __amigaos__
++#include "fx.h"
++
+ // SetEnv RAPTOR_FPS 1: the frames shown every five seconds, on the Shell
+ // (a file name instead of 1 adds the lines to that file)
+ static void I_CountFrame(void)
+@@ -772,8 +774,14 @@ static void I_CountFrame(void)
+     now = SDL_GetTicks();
+     if (now - start >= 5000)
+     {
+-        fprintf(log, "fps: %d frames in %u ms, %.1f a second\n",
++        unsigned buffers, mix_ms;
++
++        fprintf(log, "fps: %d frames in %u ms, %.1f a second",
+                 frames, (unsigned)(now - start), frames * 1000.0 / (now - start));
++        if (FX_TakeStats(&buffers, &mix_ms))
++            fprintf(log, "; audio %u buffers, %u ms mixing (%u %%)",
++                    buffers, mix_ms, mix_ms * 100 / (now - start));
++        fprintf(log, "\n");
+         fflush(log);
+         frames = 0;
+         start = now;
+diff --git a/src/rap.cpp b/src/rap.cpp
+index 68153b6..1bbda59 100644
+--- a/src/rap.cpp
++++ b/src/rap.cpp
+@@ -1114,6 +1114,9 @@ Do_Game(
+         
+         while (GFX_GetFrameCount() - local_cnt < 3)
+         {
++#ifdef __amigaos__
++            SDL_Delay(1);
++#endif // __amigaos__
+         }
+         
+         local_cnt = GFX_GetFrameCount();

@@ -1,0 +1,162 @@
+diff --git a/src/input.cpp b/src/input.cpp
+index 9455084..560bc94 100644
+--- a/src/input.cpp
++++ b/src/input.cpp
+@@ -193,6 +193,56 @@ IPT_GetJoyStick(
+     }
+ }
+ 
++#ifdef __amigaos__
++/*------------------------------------------------------------------------
++IPT_PadSteers() - AmigaOS: a pad's d-pad or stick is pushed and no
++                  steering key is held, so the pad moves the ship
++  ------------------------------------------------------------------------*/
++static int
++IPT_PadSteers(
++    void
++)
++{
++    if (KBD_Key(k_Up) || KBD_Key(k_Down) || KBD_Key(k_Left) || KBD_Key(k_Right))
++        return 0;
++
++    return JOY_GetButton(JOYUP) || JOY_GetButton(JOYDOWN) ||
++           JOY_GetButton(JOYLEFT) || JOY_GetButton(JOYRIGHT) ||
++           JOY_GetAxis(JOYSTICKX) || JOY_GetAxis(JOYSTICKY);
++}
++
++/*------------------------------------------------------------------------
++IPT_GetPadButtons() - AmigaOS: a pad's buttons alongside the keyboard
++                      (IPT_GetJoyStick's, without its steering)
++  ------------------------------------------------------------------------*/
++static void
++IPT_GetPadButtons(
++    void
++)
++{
++    if (JOY_GetMappedButton(FIRE))
++        buttons[0] = 1;
++
++    if (JOY_GetMappedButton(CHWEAPON))
++        buttons[1] = 1;
++
++    if (JOY_GetMappedButton(MEGABOMB))
++        buttons[2] = 1;
++
++    if (JOY_GetMappedButton(MEGAFIRE))
++        buttons[3] = 1;
++
++    if (JOY_GetAxis(JOYTRIGGERRIGHT) > 0)
++        buttons[0] = 1;
++    if (JOY_GetAxis(JOYTRIGGERLEFT) > 0)
++        buttons[1] = 1;
++    if (JOY_GetButton(JOYLEFTSHOULDER))
++        buttons[2] = 1;
++    if (JOY_GetButton(JOYRIGHTSHOULDER))
++        buttons[3] = 1;
++}
++#endif // __amigaos__
++
+ /*------------------------------------------------------------------------
+ IPT_GetKeyBoard (
+   ------------------------------------------------------------------------*/
+@@ -407,7 +457,18 @@ IPT_MovePlayer(
+         {
+         case I_KEYBOARD:
+         default:
++#ifdef __amigaos__
++            // AmigaOS: the keyboard, and any joystick or pad with it
++            if (IPT_PadSteers())
++            {
++                IPT_GetJoyStick();
++                break;
++            }
++            IPT_GetKeyBoard();
++            IPT_GetPadButtons();
++#else
+             IPT_GetKeyBoard();
++#endif // __amigaos__
+             break;
+         
+         case I_JOYSTICK:
+@@ -515,7 +576,11 @@ IPT_LoadPrefs(
+     opt_detail = INI_GetPreferenceLong("Setup", "Detail", 1);
+     control = INI_GetPreferenceLong("Setup", "Control", 0);
+     haptic = INI_GetPreferenceLong("Setup", "Haptic", 1);
++#ifdef __amigaos__
++    joy_ipt_MenuNew = INI_GetPreferenceLong("Setup", "joy_ipt_MenuNew", 1);
++#else
+     joy_ipt_MenuNew = INI_GetPreferenceLong("Setup", "joy_ipt_MenuNew", 0);
++#endif // __amigaos__
+     
+     k_Up = INI_GetPreferenceLong("Keyboard", "MoveUp", SC_UP);
+     k_Down = INI_GetPreferenceLong("Keyboard", "MoveDn", SC_DOWN);
+diff --git a/src/joyapi.cpp b/src/joyapi.cpp
+index 6f7b8d9..fcb7d89 100644
+--- a/src/joyapi.cpp
++++ b/src/joyapi.cpp
+@@ -44,6 +44,13 @@ IPT_CalJoy(
+ 		}
+ 		
+ 		ControllerHandles[ControllerIndex] = SDL_GameControllerOpen(JoystickIndex);
++#ifdef __amigaos__
++		if (ControllerHandles[ControllerIndex])
++			printf("Pad %d: %s (joystick %d)%s\n", ControllerIndex,
++				SDL_GameControllerName(ControllerHandles[ControllerIndex]), JoystickIndex,
++				SDL_GameControllerHasButton(ControllerHandles[ControllerIndex], SDL_CONTROLLER_BUTTON_BACK) ?
++				"" : ", no Back: shoulders + Start");
++#endif // __amigaos__
+ 		
+ 		ControllerIndex++;
+ 	}
+@@ -127,6 +134,18 @@ I_HandleJoystickEvent(
+ 			joyinput[ControllerIndex][JOYB] = SDL_GameControllerGetButton(ControllerHandles[ControllerIndex], SDL_CONTROLLER_BUTTON_B);
+ 			joyinput[ControllerIndex][JOYX] = SDL_GameControllerGetButton(ControllerHandles[ControllerIndex], SDL_CONTROLLER_BUTTON_X);
+ 			joyinput[ControllerIndex][JOYY] = SDL_GameControllerGetButton(ControllerHandles[ControllerIndex], SDL_CONTROLLER_BUTTON_Y);
++#ifdef __amigaos__
++			// a CD32 pad has no Back (the in-game menu, "Abort Mission ?"):
++			// holding both shoulders and pressing Play gives it, and not Play
++			if (!SDL_GameControllerHasButton(ControllerHandles[ControllerIndex], SDL_CONTROLLER_BUTTON_BACK) &&
++				joyinput[ControllerIndex][JOYSTART] &&
++				joyinput[ControllerIndex][JOYLEFTSHOULDER] &&
++				joyinput[ControllerIndex][JOYRIGHTSHOULDER])
++			{
++				joyinput[ControllerIndex][JOYSTART] = 0;
++				joyinput[ControllerIndex][JOYBACK] = 1;
++			}
++#endif // __amigaos__
+ 
+ 			joyinputmap[ControllerIndex][FIRE] = SDL_GameControllerGetButton(ControllerHandles[ControllerIndex], (SDL_GameControllerButton)j_lookup[0]);
+ 			joyinputmap[ControllerIndex][CHWEAPON] = SDL_GameControllerGetButton(ControllerHandles[ControllerIndex], (SDL_GameControllerButton)j_lookup[1]);
+diff --git a/src/loadsave.cpp b/src/loadsave.cpp
+index f57b6db..d42f9f4 100644
+--- a/src/loadsave.cpp
++++ b/src/loadsave.cpp
+@@ -1059,7 +1059,12 @@ RAP_WriteDefaultSetup(
+     INI_PutPreferenceLong("Setup", "Control", 0);
+ #endif //__ANDROID__
+     INI_PutPreferenceLong("Setup", "Haptic", 1);                           
++#ifdef __amigaos__
++    // a pad steers the menus (d-pad, A to choose, B back) in every mode
++    INI_PutPreferenceLong("Setup", "joy_ipt_MenuNew", 1);
++#else
+     INI_PutPreferenceLong("Setup", "joy_ipt_MenuNew", 0);         
++#endif // __amigaos__
+ 
+ #if _WIN32 || __APPLE__
+     INI_PutPreferenceLong("Setup", "sys_midi", 1);
+diff --git a/src/setup/se_main.cpp b/src/setup/se_main.cpp
+index 42118ab..48d3fb0 100644
+--- a/src/setup/se_main.cpp
++++ b/src/setup/se_main.cpp
+@@ -196,7 +196,11 @@ void GetSetupSettings(void)
+ 	txt_fullscreen = SE_INI_GetPreferenceLong("Video", "txt_fullscreen", 0);
+ #endif //__ANDROID__
+ 	haptic = SE_INI_GetPreferenceLong("Setup", "Haptic", 1);
++#ifdef __amigaos__
++	joy_ipt_MenuNew = SE_INI_GetPreferenceLong("Setup", "joy_ipt_MenuNew", 1);
++#else
+ 	joy_ipt_MenuNew = SE_INI_GetPreferenceLong("Setup", "joy_ipt_MenuNew", 0);
++#endif // __amigaos__
+ 	sys_midi = SE_INI_GetPreferenceLong("Setup", "sys_midi", 0);
+ 	winmm_mpu_device = SE_INI_GetPreferenceLong("Setup", "winmm_mpu_device", 0);
+ 	core_dls_synth = SE_INI_GetPreferenceLong("Setup", "core_dls_synth", 1);

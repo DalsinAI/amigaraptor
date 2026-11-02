@@ -1,0 +1,21 @@
+{
+  "upstream_commit": "746c35a256bfa2afc6732c7923be9e2e777d6bf0",
+  "repository_commit": "23f37e85acbbf9889c3236f73842b3672fd19d1c",
+  "source_date_epoch": "1793650095",
+  "patches": {
+    "0001-amiga-paths.patch": "04dded55246010c55ca9cc1f9aaa8e59a3423a75e6d7e6ba0b19208bbeda6368",
+    "0002-amiga-presentation.patch": "40459872f0d291dc7c51427d7cbdd313271acb72fe5a9b781848752853f550c0"
+  },
+  "compiler_release": "16.2.0-open4",
+  "compiler_archive_sha256": "495319a2ffd803278f8827cad70074029c7aa9ecbe05d037e8646ba43ab94ab2",
+  "sdk_inputs": {
+    "lib/libSDL2.a": "0adabe8d7df786a96c45dd6bf0210580d28ad2a00b7c83304b35e7e67f0a16d9",
+    "lib/libGL.a": "f5a4fd7591edfac13a82f48e5bf925a8b957e58a02afcd467ff74aa8cbdb9417",
+    "include/SDL2/SDL.h": "952e89e1dc4e0dd1a7bea6a153df632b8cdb6e433a9b3b0702c5ffe15b9b9360"
+  },
+  "setup": true,
+  "network": false,
+  "executable_sha256": "d6e5050c878c22e4b048b7122eb95dbb5b5b15b7ca9cbd4ae41c136e5197ec13",
+  "executable_bytes": 854584,
+  "scope": "Source build only; no game data, runtime or release pass implied"
+}

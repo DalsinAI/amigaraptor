@@ -1,0 +1,136 @@
+diff --git a/src/loadsave.cpp b/src/loadsave.cpp
+index 2b819aa..beb665a 100644
+--- a/src/loadsave.cpp
++++ b/src/loadsave.cpp
+@@ -30,6 +30,9 @@
+ #ifdef __GNUC__
+ #include <unistd.h>
+ #endif // __GNUC__
++#ifdef __amigaos__
++#include <sys/stat.h>
++#endif // __amigaos__
+ #ifdef _MSC_VER
+ #include <windows.h>
+ #define PATH_MAX MAX_PATH
+@@ -940,7 +943,21 @@ RAP_InitLoadSave(
+     void
+ )
+ {
+-#if _WIN32 || __linux__ || __APPLE__
++#ifdef __amigaos__
++    /* AmigaOS: the settings and the saves go in PROGDIR:User, made on the
++       first run; the game data is read from PROGDIR: */
++    mkdir("PROGDIR:User", 0755);
++    strcpy(cdpath, "PROGDIR:User/");
++
++    if (RAP_CheckFileInPath("setup.ini"))
++        sprintf(g_setup_ini, "%s%s", cdpath, "setup.ini");
++    else
++        sprintf(g_setup_ini, "%s%s", cdpath, "SETUP.INI");
++
++    cdflag = 1;
++
++    return cdpath;
++#elif _WIN32 || __linux__ || __APPLE__
+     char* gethome;
+ 
+     #if __ANDROID__
+@@ -1056,7 +1073,13 @@ RAP_WriteDefaultSetup(
+     INI_PutPreferenceLong("Setup", "alsa_output_client", 128);           
+     INI_PutPreferenceLong("Setup", "alsa_output_port", 0);               
+     INI_PutPreference("Setup", "SoundFont", "SoundFont.sf2");
++#ifdef __amigaos__
++    // straight into the game, as RAP.EXE did; setup_menu=1 brings the
++    // setup screens back
++    INI_PutPreferenceLong("Setup", "setup_menu", 0);
++#else
+     INI_PutPreferenceLong("Setup", "setup_menu", 1);
++#endif // __amigaos__
+     INI_PutPreferenceLong("Music", "Volume", 85);
+ 
+ #if _WIN32 || __APPLE__
+@@ -1125,6 +1148,12 @@ RAP_CheckFileInPath(
+ 
+     if (!access(buffer, 0))
+         return 1;
+-    else
+-        return 0;
++#ifdef __amigaos__
++    // the game data is beside the program, not in PROGDIR:User
++    sprintf(buffer, "PROGDIR:%s", filename);
++
++    if (!access(buffer, 0))
++        return 1;
++#endif // __amigaos__
++    return 0;
+ }
+\ No newline at end of file
+diff --git a/src/rap.cpp b/src/rap.cpp
+index 98187cb..68153b6 100644
+--- a/src/rap.cpp
++++ b/src/rap.cpp
+@@ -1286,7 +1286,7 @@ main(
+ 
+     RAP_InitLoadSave();
+     
+-#if _WIN32 || __linux__ || __APPLE__
++#if _WIN32 || __linux__ || __APPLE__ || __amigaos__
+     if (access(RAP_SetupFilename(), 0))
+     {
+         INI_InitPreference(RAP_SetupFilename());
+@@ -1472,7 +1472,10 @@ main(
+         fflush(stdout);
+     }
+     
+-#if _WIN32 || __linux__ || __APPLE__
++#ifdef __amigaos__
++    // the GLB files beside the program, wherever it was started from
++    GLB_InitSystem("PROGDIR:", 6, 0);
++#elif _WIN32 || __linux__ || __APPLE__
+     GLB_InitSystem(RAP_GetPath(), 6, 0);
+ #else
+     GLB_InitSystem(argv[0], 6, 0);
+diff --git a/src/setup/se_main.cpp b/src/setup/se_main.cpp
+index 9fee225..69d6711 100644
+--- a/src/setup/se_main.cpp
++++ b/src/setup/se_main.cpp
+@@ -9,6 +9,9 @@
+ #include <unistd.h>
+ #define PATH_MAX        4096
+ #endif // __GNUC__
++#ifdef __amigaos__
++#include <sys/stat.h>
++#endif // __amigaos__
+ 
+ #include "SDL_filesystem.h"
+ #include "textscreen.h"
+@@ -198,7 +201,11 @@ void GetSetupSettings(void)
+ 	alsaclient = SE_INI_GetPreferenceLong("Setup", "alsa_output_client", 128);
+ 	alsaport = SE_INI_GetPreferenceLong("Setup", "alsa_output_port", 0);
+ 	sf = (char*)SE_INI_GetPreference("Setup", "SoundFont", soundfont, 127, "SoundFont.sf2");
++#ifdef __amigaos__
++	setup = SE_INI_GetPreferenceLong("Setup", "setup_menu", 0);
++#else
+ 	setup = SE_INI_GetPreferenceLong("Setup", "setup_menu", 1);
++#endif // __amigaos__
+ 
+ 	savemousebfire = mousebfire;
+ 	savemousebchweapon = mousebchweapon;
+@@ -224,7 +231,16 @@ void GetSetupSettings(void)
+ /////////////////////////////////////////////Get Setup.ini/////////////////////////////////////////////////////////////////////
+ const char* RAP_DataPath(void)
+ {
+-#if _WIN32 || __linux__ || __APPLE__
++#ifdef __amigaos__
++	mkdir("PROGDIR:User", 0755);
++	strcpy(g_data_path, "PROGDIR:User/");
++	if (!access("PROGDIR:User/setup.ini", 0))
++		strcpy(g_setup_path, "PROGDIR:User/setup.ini");
++	else
++		strcpy(g_setup_path, "PROGDIR:User/SETUP.INI");
++	hasdatapath = 1;
++	return g_data_path;
++#elif _WIN32 || __linux__ || __APPLE__
+ 	char* gethome;
+ 	char g_setup_pathlc[PATH_MAX];
+ 

@@ -1,0 +1,194 @@
+diff --git a/src/gfxapi.cpp b/src/gfxapi.cpp
+index 0424743..a472021 100644
+--- a/src/gfxapi.cpp
++++ b/src/gfxapi.cpp
+@@ -1337,6 +1337,9 @@ GFX_DisplayUpdate(
+     
+     while (hold == framecount)
+     {
++#ifdef __amigaos__
++        SDL_Delay(1);
++#endif // __amigaos__
+         GFX_UpdateTimer();
+     }
+     
+diff --git a/src/i_video.cpp b/src/i_video.cpp
+index 6248e6b..6bf6f57 100644
+--- a/src/i_video.cpp
++++ b/src/i_video.cpp
+@@ -204,7 +204,11 @@ static bool highdpi = false;
+ void VIDEO_LoadPrefs(void)
+ {
+     fullscreen = INI_GetPreferenceLong("Video", "fullscreen", 0);
++#ifdef __amigaos__
++    aspect_ratio_correct = INI_GetPreferenceLong("Video", "aspect_ratio_correct", 0);
++#else
+     aspect_ratio_correct = INI_GetPreferenceLong("Video", "aspect_ratio_correct", 1);
++#endif // __amigaos__
+     txt_fullscreen = INI_GetPreferenceLong("Video", "txt_fullscreen", 0);
+ }
+ 
+@@ -388,6 +392,20 @@ static void I_ToggleFullScreen(void)
+ {
+     unsigned int flags = 0;
+ 
++#ifdef __amigaos__
++    // Alt+Return: the screen of its own and a Workbench window of the
++    // frame's size, each way round
++    fullscreen = !fullscreen;
++    SDL_SetWindowFullscreen(screen, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
++
++    if (!fullscreen)
++        SDL_SetWindowSize(screen, SCREENWIDTH, actualheight);
++
++    palette_to_set = true;
++    I_FinishUpdate();
++    return;
++#endif // __amigaos__
++
+     // TODO: Consider implementing fullscreen toggle for SDL_WINDOW_FULLSCREEN
+     // (mode-changing) setup. This is hard because we have to shut down and
+     // restart again.
+@@ -640,6 +658,13 @@ static void CreateUpscaledTexture(bool force)
+ 
+     SDL_Texture *new_texture, *old_texture;
+ 
++#ifdef __amigaos__
++    // AmigaOS: the frame is copied to the screen at its own size (scaled by
++    // SDL only where the window or the logical size differs), so the
++    // intermediate texture is not made
++    return;
++#endif // __amigaos__
++
+     // Get the size of the renderer output. The units this gives us will be
+     // real world pixels, which are not necessarily equivalent to the screen's
+     // window size (because of highdpi).
+@@ -716,6 +741,46 @@ static void CreateUpscaledTexture(bool force)
+     }
+ }
+ 
++#ifdef __amigaos__
++// SetEnv RAPTOR_FPS 1: the frames shown every five seconds, on the Shell
++// (a file name instead of 1 adds the lines to that file)
++static void I_CountFrame(void)
++{
++    static int state = -1;
++    static FILE *log;
++    static Uint32 start;
++    static int frames;
++    Uint32 now;
++
++    if (state < 0)
++    {
++        const char *v = SDL_getenv("RAPTOR_FPS");
++
++        state = v != NULL && *v != '\0' && strcmp(v, "0") != 0;
++        if (state)
++        {
++            log = strcmp(v, "1") ? fopen(v, "a") : NULL;
++            if (log == NULL)
++                log = stdout;
++            start = SDL_GetTicks();
++        }
++    }
++    if (!state)
++        return;
++
++    frames++;
++    now = SDL_GetTicks();
++    if (now - start >= 5000)
++    {
++        fprintf(log, "fps: %d frames in %u ms, %.1f a second\n",
++                frames, (unsigned)(now - start), frames * 1000.0 / (now - start));
++        fflush(log);
++        frames = 0;
++        start = now;
++    }
++}
++#endif // __amigaos__
++
+ //
+ // I_FinishUpdate
+ //
+@@ -813,6 +878,9 @@ void I_FinishUpdate (void)
+ 
+     SDL_RenderClear(renderer);
+ 
++#ifdef __amigaos__
++    SDL_RenderCopy(renderer, texture, NULL, NULL);
++#else
+     // Render this intermediate texture into the upscaled texture
+     // using "nearest" integer scaling.
+ 
+@@ -823,11 +891,16 @@ void I_FinishUpdate (void)
+ 
+     SDL_SetRenderTarget(renderer, NULL);
+     SDL_RenderCopy(renderer, texture_upscaled, NULL, NULL);
++#endif // __amigaos__
+ 
+     // Draw!
+ 
+     SDL_RenderPresent(renderer);
+ 
++#ifdef __amigaos__
++    I_CountFrame();
++#endif // __amigaos__
++
+ #if 0
+     // Restore background and undo the disk indicator, if it was drawn.
+     V_RestoreDiskBackground();
+@@ -1205,6 +1278,17 @@ static void SetVideoMode(void)
+     w = window_width;
+     h = window_height;
+ 
++#ifdef __amigaos__
++    // AmigaOS: the frame at its own size, 320x200 (320x240 with
++    // aspect_ratio_correct): full screen is a screen of its own in the
++    // display mode closest to that, a window is exactly that size
++    window_width = w = SCREENWIDTH;
++    window_height = h = actualheight;
++    window_flags = 0;
++
++    if (fullscreen)
++        window_flags |= SDL_WINDOW_FULLSCREEN;
++#else
+     // In windowed mode, the window can be resized while the game is
+     // running.
+     window_flags = SDL_WINDOW_RESIZABLE;
+@@ -1229,6 +1313,7 @@ static void SetVideoMode(void)
+             window_flags |= SDL_WINDOW_FULLSCREEN;
+         }
+     }
++#endif // __amigaos__
+ 
+     // Running without window decorations is potentially useful if you're
+     // playing in three window mode and want to line up three game windows
+diff --git a/src/loadsave.cpp b/src/loadsave.cpp
+index beb665a..f57b6db 100644
+--- a/src/loadsave.cpp
++++ b/src/loadsave.cpp
+@@ -1117,6 +1117,10 @@ RAP_WriteDefaultSetup(
+ #if __ANDROID__
+     INI_PutPreferenceLong("Video", "aspect_ratio_correct", 0);
+     INI_PutPreferenceLong("Video", "txt_fullscreen", 1);
++#elif __amigaos__
++    // the 320x200 frame as drawn, on a screen of its own
++    INI_PutPreferenceLong("Video", "aspect_ratio_correct", 0);
++    INI_PutPreferenceLong("Video", "txt_fullscreen", 0);
+ #else
+     INI_PutPreferenceLong("Video", "aspect_ratio_correct", 1);
+     INI_PutPreferenceLong("Video", "txt_fullscreen", 0);
+diff --git a/src/setup/se_main.cpp b/src/setup/se_main.cpp
+index 69d6711..42118ab 100644
+--- a/src/setup/se_main.cpp
++++ b/src/setup/se_main.cpp
+@@ -188,6 +188,9 @@ void GetSetupSettings(void)
+ #if __ANDROID__
+ 	aspect_ratio = SE_INI_GetPreferenceLong("Video", "aspect_ratio_correct", 0);
+ 	txt_fullscreen = SE_INI_GetPreferenceLong("Video", "txt_fullscreen", 1);
++#elif __amigaos__
++	aspect_ratio = SE_INI_GetPreferenceLong("Video", "aspect_ratio_correct", 0);
++	txt_fullscreen = SE_INI_GetPreferenceLong("Video", "txt_fullscreen", 0);
+ #else
+ 	aspect_ratio = SE_INI_GetPreferenceLong("Video", "aspect_ratio_correct", 1);
+ 	txt_fullscreen = SE_INI_GetPreferenceLong("Video", "txt_fullscreen", 0);
