@@ -117,6 +117,50 @@ second) means none was late. `SetEnv SDL_AUDIODRIVER dummy` runs the game
 without AHI; `CardType=0` under `[Music]` and `[SoundFX]` in `SETUP.INI`
 turns music and effects off.
 
+### Saves and settings
+
+Everything the game writes is in `PROGDIR:User` (`patches/0001`), made on
+the first run:
+
+- `SETUP.INI`, the settings: written with the Amiga defaults on the first
+  run, and again whenever Game Options is left (detail, music and effects
+  volume). The keys, controls and display are set by editing it (or with
+  upstream's setup screens, `setup_menu=1`).
+- `CHAR0000.FIL` to `CHAR0009.FIL`, the pilots: written when a pilot is
+  saved in the hangar (S, or the Save Pilot hot spot) and read by Load
+  Mission.
+
+Back up the drawer to keep them; the GLB files beside the program are never
+written.
+
+## Observed 2 November 2026: saves and settings (step 5)
+
+The step 4 build (`b55c304`, `receipts/4-audio-open4-stove_build.json`;
+saves and settings come from patch 0001 and need nothing more), same lab.
+
+- Game Options: High Detail switched to Low and the music volume halved
+  with the mouse; leaving the window wrote `PROGDIR:User/SETUP.INI`
+  (`Detail=0`, `[Music] Volume=43`).
+- A new pilot (SAVER, callsign PROGDIR, Rookie) bought an Ion Scanner in
+  the supply room with the keyboard (Right to browse, Return to buy), which
+  took the $10,000 to $0; S in the hangar asked "Save SAVER - PROGDIR ?",
+  Yes wrote `PROGDIR:User/CHAR0000.FIL` (160 bytes). The game was quit
+  from the menus.
+- The lab was stopped and started again (a cold start), and the game
+  started anew: Game Options showed Low Detail and the music volume where
+  it was left; Load Mission listed SAVER, PROGDIR with 0 credits and
+  loaded it; the supply room's sell list showed the Ion Scanner held (1).
+  Quit again, no task left.
+
+These pictures were taken in the lab with GFOpenSnap (Shift+Right
+Amiga+S), which saves the front screen as it is.
+
+![Ion Scanner bought, $0 left](docs/observed/step5-store-bought.png)
+![Saving the pilot](docs/observed/step5-save-ask.png)
+![After the cold start: Game Options as left](docs/observed/step5-options-after-restart.png)
+![After the cold start: Load Mission](docs/observed/step5-load-pilot.png)
+![After the cold start: the Ion Scanner held](docs/observed/step5-store-after-load.png)
+
 ## Observed 2 November 2026: sound (step 4)
 
 Commit `b55c304` (patches 0001 to 0004), Cradle `stove_build`, open4:
