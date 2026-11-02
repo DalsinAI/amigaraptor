@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "ports": {
+    "raptor": {
+      "title": "Raptor: Call of the Shadows",
+      "source": {
+        "kind": "git",
+        "url": "https://github.com/skynettx/raptor.git",
+        "commit": "746c35a256bfa2afc6732c7923be9e2e777d6bf0",
+        "submodules": false,
+        "imported": "Upstream tree imported into this repository at 90a24e0; build-amiga.sh builds it as imported, with patches/ applied to a copy"
+      },
+      "contentPolicy": "GPL-2.0 engine (LICENSE). The game data is not part of the engine: the publisher's shareware episode (Apogee's v1.2, episode 1) is fetched on the PC that stages a lab, checked against gameports/runtime-data.json, and never committed or packaged.",
+      "runtimeData": {
+        "mode": "auto-fetch",
+        "dataset": "raptor-shareware-1.2",
+        "manifest": "gameports/runtime-data.json"
+      },
+      "user": "PROGDIR:User",
+      "stage": "TESTING",
+      "stageEvidence": "README.md, Observed 2 November 2026: lab:raptor, patches 0001-0004, open4 build; title, menus and flight on a 320x200 screen of its own; keyboard and mouse; Bravo wave 1 flown (to its end only in upstream's developer mode); 23.3 frames a second in flight (the game's pace); AHI fed in time in steady play, not heard; saves and settings kept across a cold start; three whole-lab stops, cause not established; pads not exercised."
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "policy": "Bundle data when redistribution is clearly licensed. Otherwise fetch public/freeware/shareware/demo data from the recorded upstream/public source and stage it locally without committing it to source control.",
+  "datasets": {
+    "raptor-shareware-1.2": {
+      "games": [
+        "raptor"
+      ],
+      "filename": "1rap12.zip",
+      "bytes": 2013010,
+      "urls": [
+        "https://archive.org/download/RaptorCallOfTheShadows/1rap12.zip"
+      ],
+      "sha256": "7d6b062dcdc76d9ea02d8d71af14e5043223581d792f6ead4eb1316fd0351552",
+      "inner": {
+        "archive": "RAPSW12.SHR",
+        "files": {
+          "FILE0000.GLB": "6933afc73f9d12c8d215693057bd564920a2e29d25b617bba969767c60a60d9e",
+          "FILE0001.GLB": "0afc45983e79f499609a1ea55ee59ebd606daa9a529fcd9ac487e4a5e1e0f589"
+        }
+      },
+      "availability": "publisher-shareware",
+      "packaging": "fetch-on-demand",
+      "licence": "Apogee's VENDOR.DOC (V.07.15.94) inside the archive: everyone may copy and pass around the shareware program (episode 1) without charging for it, all files unmodified; CD-ROM, bundle and retail distribution need Apogee's written permission.",
+      "provenance": [
+        "The publisher's Raptor page (3D Realms, legacy.3drealms.com/raptor/) lists 1rap12.zip, 'v1.2 Shareware Episode (1965k)'; the file here is 2013010 bytes (1965.8 KiB).",
+        "FILE_ID.DIZ: 'RAPTOR - v1.2 from APOGEE! (VGA)'. The game files' sizes and dates are those VENDOR.DOC lists for a legal shareware copy (FILE0000.GLB 575,577 and FILE0001.GLB 4,027,556 bytes, 10-01-94).",
+        "The same SHA-256 is pinned by Arch Linux's AUR package raptor-cos; the archive.org item (creator Mountain King Studios) gives MD5 18ab003c8d30e9f1e506f72804470355, which matches."
+      ],
+      "notes": "SHA-256 observed on 2 November 2026 and pinned for repeat downloads; not a publisher signature. The publisher's own download host (legacy.3drealms.com) could not be reached from the network the pin was taken on that day, so the mirror is fetched and checked against the pin. Only FILE0000.GLB and FILE0001.GLB are staged, for local lab use; nothing is redistributed."
+    }
+  }
+}
