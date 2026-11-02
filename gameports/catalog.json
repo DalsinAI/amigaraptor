@@ -17,7 +17,8 @@
         "manifest": "gameports/runtime-data.json"
       },
       "user": "PROGDIR:User",
-      "stage": "TESTING"
+      "stage": "TESTING",
+      "stageEvidence": "README.md, Observed 2 November 2026: lab:raptor, patches 0001-0004, open4 build; title, menus and flight on a 320x200 screen of its own; keyboard and mouse; Bravo wave 1 flown (to its end only in upstream's developer mode); 23.3 frames a second in flight (the game's pace); AHI fed in time in steady play, not heard; saves and settings kept across a cold start; three whole-lab stops, cause not established; pads not exercised."
     }
   }
 }
