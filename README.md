@@ -133,6 +133,86 @@ the first run:
 Back up the drawer to keep them; the GLB files beside the program are never
 written.
 
+## Status: TESTING, not RELEASE
+
+| Gate (`amicradle` docs/porting/MEASUREMENT.md) | State, 2 November 2026 |
+|---|---|
+| Rights of source, dependencies, data | Engine GPL-2.0; shareware data's licence (Apogee's `VENDOR.DOC`) recorded, fetched not shipped; the engine's own review (a reconstruction of the DOS program) open |
+| Reproducible revision and patches | Upstream pin, `patches/0001` to `0004`, two Cradle jobs at one commit give one executable |
+| Qualified build with binary hash | `receipts/` |
+| Launch to the first frame | Passed (title menu, 320x200 screen of its own) |
+| Graphics modes and focus | Own screen and an exact window, Alt+Return both ways; AGA without RTG not tried |
+| Keyboard, mouse, joystick | Keyboard and mouse passed; the port-2 stick found, pad presses not exercised |
+| Sound | AHI opened and fed in time in steady play, behind in the busiest moments; not heard (muted lab) |
+| Saves, settings across a restart | Passed (cold start) |
+| Clean quit | Passed every time the lab was running; see the whole-lab stops below |
+| Repeated fresh-instance test | Not yet |
+
+Known problem: three whole-lab stops in about 50 minutes of the game
+running (two with the step 3 build, one with the step 4 build, in flight,
+at the quit question and in the intro). See *Observed: play test*.
+
+## Observed 2 November 2026: play test (step 6)
+
+All in `lab:raptor` (a copy of Instance-32: Kickstart 47, 68040 + 68882
+under Cradle's AC090 runtime, the RTG board, muted) with gfopenrtg
+`main`'s `SDL2.module` (210df77) in `LIBS:OpenGPU/` and
+`LIBS:GFOpenGPU/`, the shareware data staged by `runtime-data`, the step 4
+build `b55c304` (executable `2611a0e3...`; the same executable was built
+again at this step's commit, `receipts/6-playtest-open4-stove_build.json`)
+and, before it, the step 3 build. `SetEnv RAPTOR_FPS` logged every five
+seconds.
+
+Played:
+
+- Six games at Rookie on Bravo Sector wave 1 flown with the keyboard
+  (HoldKeys holding Ctrl to fire, Left and Right in turn, or fire alone),
+  enemies shot down and money earned each time: four ended with the ship
+  shot down after about 45 to 100 seconds (flown blind), which ends the
+  game and goes back to the title menu as it should; one was aborted from
+  the in-flight menu; one ended in a whole-lab stop (below).
+- Wave 1 to its end in upstream's developer mode (`Set S_HOST CASTLE`,
+  invulnerable), between four and five minutes, back to the hangar, then
+  wave 2 started; a check of a whole wave, not a fair completion.
+- Menus, the hangar, the supply room (buying), saving and loading a pilot,
+  Game Options, quitting through the order and ending screens.
+
+Frame rate (frames shown, per five seconds):
+
+| Where | Frames a second | Sound buffers in 5 s (431 needed) | Time in the mixer |
+|---|---|---|---|
+| Flight, steady (fair and developer mode; sound figures from the step 4 build) | 23.3 (22.0 to 23.4) | 426 to 432 | 30 to 46 % |
+| Flight, busiest (a damaged ship, many explosions) | 12.7 to 20.7 | 323 to 410 | 58 to 66 % |
+| Intro animations | 7.5 to 42.8 (each scene's own rate) | 431 to 632 (catching up) | 26 to 105 % |
+| Menus, hangar | under 1 to 27 (drawn when they change) | about 431 | 26 to 40 % |
+
+23.3 frames a second is the game's own pace: its loop draws a frame on
+every third tick of its 70 Hz clock (`rap.cpp`), so in steady flight the
+port keeps the original speed. The OPL3 emulation of the music is the most
+expensive part; in the busiest moments the mixer falls behind and the
+sound would stutter.
+
+The whole-lab stops (three): the screen froze, keys and the mouse did
+nothing (not even Left Amiga+M), Cradle's agent stopped answering, and a
+reset was needed. They came once at the quit question after a game, once
+in flight after about 100 seconds, and once in the intro of a fresh start
+(the five seconds before it showed the mixer at 105 % of the time). The
+runtime's PC samples then show the processor busy in two places in the
+ROM's exec, the bodies of `Disable()` and `Enable()` (they touch
+`IDNestCnt`, ExecBase+0x126), called in turn without end: something polls
+with interrupts briefly off and never lets the other tasks run. With
+`SDL_AUDIODRIVER=dummy` one game was played and quit without a stop, too
+little to clear AHI. The cause is not established; the next step is a
+longer run with the dummy driver and with `SDL_AUDIODRIVER=paula`, and a
+look at the AHI back end's linked requests when the mixer falls behind
+(gfopenrtg `src/audio/amigaos3/SDL_os3audio.c`).
+
+Remaining before release: the whole-lab stops explained and fixed; a
+person's play through more waves with a CD32 or USB pad; sound heard on a
+machine with audio; AGA without RTG; a repeated fresh-instance test;
+packaging (icon, drawer, notices, the data fetch for users) and the
+licence review of the engine. This is TESTING, not RELEASE.
+
 ## Observed 2 November 2026: saves and settings (step 5)
 
 The step 4 build (`b55c304`, `receipts/4-audio-open4-stove_build.json`;
