@@ -12,3 +12,4 @@ was built; the receipt is committed after it.
 | `2-presentation-open4-stove_build.json` | Cradle `stove_build`, target `.` | Cradle (open4) | `cca785b7c5386d56a574242670daa94d410c14c6f2799dbacbba5f5ec3336184` |
 | `3-input-open4-stove_build.json` | Cradle `stove_build`, target `.` | Cradle (open4) | `b80936815aba83f0a949bf1fba5cbb7abd6c431f0718e32ccf7c8e34caa48b83` |
 | `4-audio-open4-stove_build.json` | Cradle `stove_build`, target `.` | Cradle (open4) | `8ab21b3797bacc387f17b45ed63a84bffe18798da83bfc8c94b65f36f95e6a23` |
+| `6-playtest-open4-stove_build.json` | Cradle `stove_build`, target `.` | Cradle (open4); the same executable as step 4 | `25eaa1983744380a9ea21febe0f9f5f74a997e850c97855f992cb9464ebf48e5` |
