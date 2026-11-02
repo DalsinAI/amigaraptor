@@ -81,6 +81,75 @@ upscaled texture. `aspect_ratio_correct=1` stretches it to 320x240 instead.
 instead of `1` adds the lines to that file). Quitting shows upstream's
 text-mode ending screen in a window until a key is pressed.
 
+### Controls
+
+Keyboard (upstream's defaults, kept in `PROGDIR:User/SETUP.INI`): the arrow
+keys move, Ctrl fires, Alt fires the special weapon, Space changes the
+special weapon, Right Shift drops a mega bomb, P pauses, Escape opens the
+in-flight menu ("Abort Mission ?") and leaves menus, F1 is help, and in the
+hangar S saves the pilot. Menus also take Return, the arrow keys and the
+mouse; the hangar is worked with the mouse pointer. Alt+Return switches
+screen and window.
+
+Joysticks and pads come through SDL from GFOpenInput (lowlevel.library
+where GFOpenInput isn't installed); the game lists the ones it found when
+it starts (`Pad 0: ...`). `patches/0003` makes them work without changing
+the control setting: in keyboard mode (`Control=0`, the default) a pad plays
+alongside the keyboard, its d-pad or stick steering when no arrow key is
+held and its buttons firing (A fire, B special, X change special, Y mega,
+the shoulders change special and mega); `joy_ipt_MenuNew=1` is the Amiga
+default, so the d-pad, A and B drive the menus. A CD32 pad has no Back
+button, which the game uses for the in-flight menu: hold both shoulders
+and press Play. `Control=2` is upstream's joystick-only mode.
+
+## Observed 2 November 2026: input and the first wave (step 3)
+
+Commit `2fe304a` (patches 0001 to 0003), Cradle `stove_build`, open4:
+executable SHA-256
+`31e5954b43d7f58cd6667299199032e6064b592996d3b0e3ffedbbd7e6fc8355`
+(`receipts/3-input-open4-stove_build.json`); `tests/lab` built HoldKeys.
+Same lab and `SDL2.module` as step 2, `PROGDIR:User` cleared first.
+
+- Keyboard in menus: Return on New Mission, the name and callsign typed
+  into the pilot form, Up and Return for the difficulty (Rookie), Escape out
+  of the credits and the hangar, the quit question answered with Return.
+  The mouse pointer works the hangar (Fly Mission) and the sector list.
+- Flight, Bravo Sector wave 1, Rookie: the ship flown with the keyboard
+  through HoldKeys (Ctrl held to fire, Left and Right in turn), enemies shot
+  down and the money rising ($10,000 to $16,050); Escape gives "Abort
+  Mission ?", Return answers No and the flight goes on, Yes goes back to the
+  hangar. Driven blind like this the ship was shot down after 45 to 100
+  seconds each time, which ends the game as it should (back to the title
+  menu).
+- Wave 1 to its end: with upstream's developer mode (`Set S_HOST CASTLE`
+  before starting, the original game's invulnerable test mode, which also
+  fills the money and the weapons) the ship flew all of wave 1, between four
+  and five minutes, and the game went back to the hangar; Fly Mission then
+  started wave 2 (a new map). That run used the step 4 build (`b55c304`,
+  which adds only the sound statistics and a sleep in the frame wait to
+  this one) and is a check of the wave's length and its end, not a fair
+  completion by a player.
+- Frame rate in flight: 23.3 frames a second, the game's own pace (its
+  loop draws a frame every third tick of its 70 Hz clock).
+- Pads: GFOpenInput's port-2 stick is found and opened
+  (`Pad 0: Amiga joystick port (2): joystick`). No stick or pad press can be
+  sent from the lab tools, so pad play, the CD32 Back chord and the pad
+  menus are not yet exercised.
+- Twice with this build the whole lab stopped (screen frozen, no input, the
+  agent silent, the processor idle): once answering the quit question after
+  a game, once in flight after about 100 seconds. A reset brought it back.
+  The cause is not established; it was not seen in the next 14 minutes
+  with the step 4 build (7 of them in flight, sound on; see step 4).
+
+![Pilot form](docs/observed/step3-pilot-entry.png)
+![Hangar, Fly Mission](docs/observed/step3-hangar-fly.png)
+![Wave 1, the start](docs/observed/step3-wave1-start.png)
+![Wave 1, $12,650](docs/observed/step3-wave1-12650.png)
+![Wave 1, $16,050](docs/observed/step3-wave1-16050.png)
+![Abort Mission ?](docs/observed/step3-abort-mission.png)
+![Back in the hangar after wave 1 (developer mode)](docs/observed/step3-hangar-after-wave1.png)
+![Wave 2 (developer mode)](docs/observed/step3-wave2-godmode.png)
+
 ## Observed 2 November 2026: presentation (step 2)
 
 Lab `lab:raptor`, a copy of Instance-32 (Kickstart 47, 68040 + 68882 under
