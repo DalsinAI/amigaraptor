@@ -42,8 +42,19 @@ if (stove / "STOVE.json").is_file():
     got = json.loads((stove / "STOVE.json").read_text()).get("compilerArchive", {}).get("sha256")
 if got is None and (stove / "provenance.json").is_file():
     got = json.loads((stove / "provenance.json").read_text()).get("archive_sha256")
+# GFOpenAmigaGCC 16.2.0-open5 (Cradle's os32-gcc16 stove since the evening of
+# 2 November 2026) has no published archive: known by STOVE.json's release
+# and the compiler's own --version
+if got is None and (stove / "STOVE.json").is_file() and \
+        json.loads((stove / "STOVE.json").read_text()).get("release") == "GFOpenAmigaGCC 16.2.0-open5":
+    import subprocess
+    v = subprocess.run([str(stove / "prefix/bin/m68k-amigaos-gcc"), "--version"], capture_output=True, text=True).stdout
+    if "(GFOpenAmigaGCC 16.2.0-open5)" not in v:
+        sys.exit(f"STOVE.json says GFOpenAmigaGCC 16.2.0-open5, the compiler says {v.splitlines()[:1]}")
+    got = "unpublished"
+    known[got] = "16.2.0-open5"
 if got not in known:
-    sys.exit(f"{stove} is not an OpenAmigaGCC 16.2.0-open3 or open4 stove (compiler archive {got})")
+    sys.exit(f"{stove} is not an OpenAmigaGCC 16.2.0-open3 or open4 or a GFOpenAmigaGCC 16.2.0-open5 stove (compiler archive {got})")
 print(known[got], got)
 EOF
 )

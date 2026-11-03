@@ -1,0 +1,22 @@
+{
+  "drawer": "Raptor",
+  "drawer_icon": "icons/Raptor.info",
+  "archive": "raptor-{version}-68040",
+  "members": [
+    {"name": "raptor", "build": "Raptor/raptor", "check": "executable_sha256"},
+    {"name": "raptor.info", "repo": "icons/raptor.info"},
+    {"name": "ReadMe", "readme": "package/ReadMe.in"},
+    {"name": "ReadMe.info", "repo": "icons/ReadMe.info"},
+    {"name": "LICENSE", "build": "Raptor/LICENSE"},
+    {"name": "LICENSE.info", "repo": "icons/LICENSE.info"}
+  ],
+  "aminet": [
+    ["Short", "Raptor: Call of the Shadows engine, 68040+FPU"],
+    ["Author", "Raptor engine: skynettx and contributors, after Mountain King Studios; port: AmiCradle Team"],
+    ["Uploader", "AmiCradle Team"],
+    ["Type", "game/shoot"],
+    ["Version", "{version}"],
+    ["Requires", "AmigaOS 3.2, 68040/68060 with FPU, GFOpenGPU SDL2, AHI, Raptor data"],
+    ["Architecture", "m68k-amigaos >= 3.2"]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "about": "The Workbench icons of the Raptor drawer: python3 AMICRADLE/scripts/port_icons.py icons/icons.json --out icons (DalsinAI/amicradle). The art is the engine's own program icon (pkg/osx/raptorlauncher/Assets.xcassets/AppIcon.appiconset/raptor.png, GPL-2.0 with the engine).",
+  "drawer": {"name": "Raptor"},
+  "badge": "art/raptor.png",
+  "icons": [
+    {"file": "raptor.info", "kind": "tool", "stack": 262144},
+    {"file": "ReadMe.info", "kind": "readme"},
+    {"file": "LICENSE.info", "kind": "readme"}
+  ]
+}
