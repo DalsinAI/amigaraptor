@@ -36,7 +36,8 @@ COMPILER=$(python3 - "$STOVE" "$OPEN3" "$OPEN4" <<'EOF'
 import json, sys
 from pathlib import Path
 stove = Path(sys.argv[1])
-known = {sys.argv[2]: "16.2.0-open3", sys.argv[3]: "16.2.0-open4"}
+known = {sys.argv[2]: "16.2.0-open3", sys.argv[3]: "16.2.0-open4",
+         "65f284476ec20cdf7851475d91d2c18d77fa6f2a0eb0f844b6ca23dbfa57eaa7": "16.2.0-open6"}   # GFOpenAmigaGCC, v16.2.0-open6's archive
 got = None
 if (stove / "STOVE.json").is_file():
     got = json.loads((stove / "STOVE.json").read_text()).get("compilerArchive", {}).get("sha256")
@@ -54,7 +55,7 @@ if got is None and (stove / "STOVE.json").is_file() and \
     got = "unpublished"
     known[got] = "16.2.0-open5"
 if got not in known:
-    sys.exit(f"{stove} is not an OpenAmigaGCC 16.2.0-open3 or open4 or a GFOpenAmigaGCC 16.2.0-open5 stove (compiler archive {got})")
+    sys.exit(f"{stove} is not an OpenAmigaGCC 16.2.0-open3 or open4 or a GFOpenAmigaGCC 16.2.0-open5 or open6 stove (compiler archive {got})")
 print(known[got], got)
 EOF
 )
