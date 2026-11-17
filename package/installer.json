@@ -1,0 +1,18 @@
+{
+  "name": "Raptor: Call of the Shadows",
+  "version": "746c35a-amigaos3-test1",
+  "drawer": "Raptor",
+  "program": "raptor",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 2000000,
+  "modules": [
+    "SDL2.module"
+  ],
+  "keep": [
+    "User"
+  ],
+  "parent": "Work:Games",
+  "badge": "../icons/art/raptor.png",
+  "script": "Install-Raptor"
+}

@@ -10,6 +10,10 @@
     {"name": "LICENSE", "build": "Raptor/LICENSE"},
     {"name": "LICENSE.info", "repo": "icons/LICENSE.info"}
   ],
+  "root": [
+    {"name": "Install-Raptor", "repo": "package/Install-Raptor", "script": true},
+    {"name": "Install-Raptor.info", "repo": "package/Install-Raptor.info"}
+  ],
   "aminet": [
     ["Short", "Raptor: Call of the Shadows engine, 68040+FPU"],
     ["Author", "Raptor engine: skynettx and contributors, after Mountain King Studios; port: AmiCradle Team"],

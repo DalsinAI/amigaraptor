@@ -14,6 +14,9 @@ package/package.json says what goes in the drawer, from where:
                  of it unpacked under "name"; "" for the drawer itself)
   "check"        optional, on a "build" member: the receipt.json field that
                  must be its SHA-256
+  "root"         optional: members beside the drawer, at the archive's root
+                 (the Installer script and its icon), with "build", "repo" or
+                 "readme" as above, and "script": true for a script's s bit
   "aminet"       the Aminet readme's head: [field, value] pairs
 
 BUILD holds what the port's build-amiga.sh made, with receipt.json. A
@@ -23,7 +26,8 @@ line over 78 characters.
 
 OUT gets:
   ARCHIVE.lha          level-1 headers, -lh5-, as Amiga LhA writes them
-                       (tools/lha_archive.py), the drawer and its icon
+                       (tools/lha_archive.py), the drawer and its icon, and
+                       the root members beside them
   ARCHIVE.lha.sha256
   ARCHIVE.readme       the Aminet-style description
   DRAWER/ DRAWER.info  the drawer as it unpacks
@@ -132,6 +136,22 @@ def main() -> int:
 
     members = [lha_archive.Member(f"{drawer}/{p}", b, prot, "", stamp) for p, b, prot in files]
     members.append(lha_archive.Member(f"{drawer}.info", (ROOT / spec["drawer_icon"]).read_bytes(), 0, "", stamp))
+    for m in spec.get("root", []):             # beside the drawer: the Installer and its icon
+        name = m["name"]
+        if "/" in name or name.lower() in (drawer.lower(), f"{drawer}.info".lower()):
+            raise SystemExit(f"package.json: root member {name} must be a plain name beside the drawer")
+        if "build" in m:
+            blob = (args.build / m["build"]).read_bytes()
+        elif "repo" in m:
+            blob = (ROOT / m["repo"]).read_bytes()
+        elif "readme" in m:
+            blob = fill(ROOT / m["readme"], args.version, receipt)
+        else:
+            raise SystemExit(f"package.json: {name} has no source")
+        members.append(lha_archive.Member(name, blob, EXECUTE if m.get("script") else 0, "", stamp))
+    roots = [m.path.lower() for m in members if "/" not in m.path]
+    if len(set(roots)) != len(roots):
+        raise SystemExit("two members at the archive's root share a name (AmigaDOS names ignore case)")
     listing = [{"path": m.path, "bytes": len(m.data), "sha256": sha256(m.data)} for m in members]
 
     args.out.mkdir(parents=True, exist_ok=True)
