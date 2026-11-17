@@ -21,9 +21,12 @@ Requirements
 Installing
 ----------
 
-Unpack the archive where you keep games (lha x raptor-...lha Games:), then
-put the .GLB files in the Raptor drawer, beside the program. Settings
-(SETUP.INI) and saved pilots go to the drawer's User drawer.
+Unpack the archive anywhere and double-click Install-Raptor: it checks the
+CPU, the FPU and SDL2.module, asks where the game goes (Work:Games by
+default) and copies the Raptor drawer there. Then put the .GLB files in the
+Raptor drawer, beside the program. Settings (SETUP.INI) and saved pilots go
+to the drawer's User drawer; installing again over it keeps User and your
+.GLB files.
 
 Playing
 -------
